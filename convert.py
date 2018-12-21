@@ -16,6 +16,6 @@ with open(filepath) as fp:
         else:
             cnt = 0
             string = line.strip()
-            print(num, code, string)
+            print(num, "=> { \"" + code + "\".to_string() }")
 
         line = fp.readline()
