@@ -1,0 +1,12 @@
+[package]
+name = "win-keylogger-rs"
+version = "0.1.0"
+authors = ["thomaslienbacher <lienbacher.tom@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+chrono = "0.4.6"
+
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["winuser"] }
