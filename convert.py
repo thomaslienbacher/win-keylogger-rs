@@ -1,3 +1,5 @@
+""" Converts vkeys.txt into Rust code so I can easily implement it """
+
 filepath = 'vkeys.txt'
 code = ''
 num = ''
