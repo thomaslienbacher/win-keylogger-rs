@@ -6,7 +6,14 @@ edition = "2018"
 
 [dependencies]
 chrono = "0.4.6"
-
+os_info = "*"
+hostname = "*"
 
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = ["winuser", "winnt", "processthreadsapi", "psapi"] }
+winapi = { version = "0.3", features = ["winuser", "winnt", "processthreadsapi", "psapi", "winnls"] }
+
+[profile.release]
+lto = true
+opt-level = 'z'
+overflow-checks = false
+debug = false
