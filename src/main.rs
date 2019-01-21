@@ -3,29 +3,26 @@
 #[cfg(windows)]
 extern crate winapi;
 
-extern crate chrono;
-extern crate os_info;
-extern crate hostname;
-
 use std::fs::*;
 use std::io::*;
-use chrono::{DateTime, Utc, Timelike};
+
+use chrono::{DateTime, Timelike, Utc};
 
 #[cfg(windows)]
 fn run(file: &mut File) {
     use winapi::um::winuser::*;
-    use winapi::ctypes::c_int;
+    use winapi::um::winnt::PROCESS_QUERY_LIMITED_INFORMATION;
     use winapi::um::processthreadsapi::OpenProcess;
     use winapi::um::psapi::GetProcessImageFileNameW;
     use winapi::um::winnls::GetUserDefaultLocaleName;
     use winapi::shared::minwindef::DWORD;
-    use winapi::um::winnt::PROCESS_QUERY_LIMITED_INFORMATION;
+    use winapi::ctypes::c_int;
     use std::{thread, time::Duration};
 
     log_header(file);
 
     let locale = unsafe {
-        const LEN: i32 = 64;
+        const LEN: i32 = 85;//from https://docs.microsoft.com/de-de/windows/desktop/Intl/locale-name-constants
         let mut buf = vec![0 as u16; LEN as usize];
         GetUserDefaultLocaleName(buf.as_mut_ptr(), LEN);
 
@@ -60,7 +57,7 @@ fn run(file: &mut File) {
         };
 
         let filename = unsafe {
-            const LEN: u32 = 255;
+            const LEN: u32 = 256;
             let mut buf = vec![0 as u16; LEN as usize];
             GetProcessImageFileNameW(handle, buf.as_mut_ptr(), LEN);
 
@@ -106,11 +103,9 @@ fn run(file: &mut File) {
 }
 
 fn log_header(file: &mut File) {
-    log(file, "~~~~~Logheader~~~~~\n".to_string());
-
     let os_info = {
         let info = os_info::get();
-        format!("OS: type: {}, version: {}\n", info.os_type(), info.version())
+        format!("OS: type: {}\n Version: {}\n", info.os_type(), info.version())
     };
     log(file, os_info);
 

@@ -1,6 +1,6 @@
 [package]
 name = "win-keylogger-rs"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Thomas Lienbacher <lienbacher.tom@gmail.com>"]
 edition = "2018"
 
@@ -17,3 +17,4 @@ lto = true
 opt-level = 'z'
 overflow-checks = false
 debug = false
+panic = "abort"
