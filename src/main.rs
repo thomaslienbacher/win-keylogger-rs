@@ -105,7 +105,7 @@ fn run(file: &mut File) {
 fn log_header(file: &mut File) {
     let os_info = {
         let info = os_info::get();
-        format!("OS: type: {}\n Version: {}\n", info.os_type(), info.version())
+        format!("OS: type: {}\nVersion: {}\n", info.os_type(), info.version())
     };
     log(file, os_info);
 
@@ -120,6 +120,11 @@ fn log(file: &mut File, s: String) {
 
     match file.write(s.as_bytes()) {
         Err(e) => { println!("Couldn't write to log file: {}", e) }
+        _ => {}
+    }
+
+    match file.flush() {
+        Err(e) => { println!("Couldn't flush log file: {}", e) }
         _ => {}
     }
 }
