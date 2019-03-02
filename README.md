@@ -6,4 +6,5 @@ Only works on Windows!
 
 Tested in Windows 10
 
-
+### Disclaimer
+This keylogger is only intended for research and educational purposes.
